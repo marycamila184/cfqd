@@ -92,8 +92,8 @@ cfqd/
 │       └── face.py              ✅ extracted from CARLA, predict_proba, CARLA bugs fixed
 ├── scripts/
 │   ├── run_batch.py             ✅ datasets × models × methods × seeds × budgets (--dry-run, --jobs, resumable)
-│   ├── build_report_data.py     ✅ aggregates results/full into the data files of the results page
-│   ├── repair_manifest.py       ✅ rebuilds manifest entries lost by parallel appends (runs before 2026-11-21)
+│   ├── build_report_data.py     ✅ aggregates results/full_rerun into the data files of the results page
+│   ├── compare_runs.py          ✅ compares two runs of a grid row by row (reproducibility, C4)
 │   └── validate_moc.R           ➕ original MOC (counterfactuals package) to validate the port
 ├── report/
 │   └── index.html               ✅ source of the group results page (5 datasets, budget curves, checks)
@@ -123,9 +123,9 @@ cfqd/
 | `data/manifest.jsonl` | yes | pins id, version and md5 of every dataset |
 | `data/raw/`, `data/processed/` | no | `cfqd.datasets.build(name)` downloads (md5-checked) and preprocesses |
 | `models/` | no | trained on demand per seed by `cfqd.models.get_model` (deterministic) |
-| `results/full/summary/`, `results/full/manifest.jsonl` | yes | one row per instance × budget of the 700-configuration run (~12 MB) |
+| `results/full_rerun/summary/`, `results/full_rerun/manifest.jsonl` | yes | one row per instance × budget of the 700-configuration run (~12 MB); `compare_with_full.csv` is the C4 check against the first run, which is kept only in the git history (commit `6a04788`) |
 | `results/carla_check/summary/`, `results/carla_check/manifest.jsonl` | yes | the CARLA success-rate check (notebook 03) |
-| `results/full/runs/` | no | one row per counterfactual (~200 MB); rerun `configs/experiments/full.yaml` (~6 h on 6 cores) or ask for the copy on the group Drive |
+| `results/full_rerun/runs/` | no | one row per counterfactual (~200 MB); rerun `configs/experiments/full.yaml` (~6 h on 6 cores) or ask for the copy of the first run on the group Drive |
 | `results/report/` | no | `python scripts/build_report_data.py` |
 | other `results/*` (smoke, curve_demo, simulation_quick) | no | rebuilt by the notebooks |
 
