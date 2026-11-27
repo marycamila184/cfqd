@@ -35,7 +35,7 @@ coverage and QD-score. MAP-Elites is the only method that uses the grid during t
 | QD | NSLC | novelty plus local competition on quality | LR, RF, NN |
 | QD | Surprise / Novelty + Surprise | rewards deviation from predicted behavior | LR, RF, NN |
 | Baseline | Wachter (2017) | smallest change via gradient; returns 1 counterfactual | LR, NN (no gradient for RF) |
-| Baseline | DiCE (2020) | set with a diversity term (`genetic` mode for all models) | LR, RF, NN |
+| Baseline | DiCE (2020) | set with a diversity term (`genetic` mode; `random` mode as a second baseline) | LR, RF, NN |
 | Baseline | FACE (2020) | paths through dense regions of the data | LR, RF, NN (after adaptation) |
 | Baseline | MOC (2020) | NSGA-II with 4 objectives; returns the Pareto front | LR, RF, NN |
 
@@ -97,6 +97,12 @@ cfqd/
 │   └── validate_moc.R           ➕ original MOC (counterfactuals package) to validate the port
 ├── report/
 │   └── index.html               ✅ source of the group results page (5 datasets, budget curves, checks)
+├── reports/
+│   ├── full_run_results.en.md   ✅ results of the full run and open concerns C1–C20 (also .pt-BR.md)
+│   └── accuracies.csv           ✅ test accuracy of the explained models
+├── paper/
+│   └── 01_abstract_intro_related_work.en.md   ✅ draft: abstract, introduction, related work
+├── results/                     see "What is versioned and what is generated" below
 ├── notebooks/
 │   ├── 01_t6_datasets_and_constraints.ipynb    ✅ acquisition, HELOC tests, YAML validation, T6 checklist
 │   ├── 02_t5_models.ipynb                      ✅ training, Guidotti accuracies, T5 checklist
@@ -125,6 +131,7 @@ cfqd/
 | `models/` | no | trained on demand per seed by `cfqd.models.get_model` (deterministic) |
 | `results/full_rerun/summary/`, `results/full_rerun/manifest.jsonl` | yes | one row per instance × budget of the 700-configuration run (~12 MB); `compare_with_full.csv` is the C4 check against the first run, which is kept only in the git history (commit `6a04788`) |
 | `results/carla_check/summary/`, `results/carla_check/manifest.jsonl` | yes | the CARLA success-rate check (notebook 03) |
+| `results/simulation/summary/`, `results/simulation/manifest.jsonl` | yes | simulation study, full design (66 configurations, `configs/experiments/simulation.yaml`) |
 | `results/full_rerun/runs/` | no | one row per counterfactual (~200 MB); rerun `configs/experiments/full.yaml` (~6 h on 6 cores) or ask for the copy of the first run on the group Drive |
 | `results/report/` | no | `python scripts/build_report_data.py` |
 | other `results/*` (smoke, curve_demo, simulation_quick) | no | rebuilt by the notebooks |
@@ -134,10 +141,10 @@ cfqd/
 | Who | Files | Plan tasks |
 | --- | --- | --- |
 | **Mary** | `operators.py`, `descriptor.py`, `archive.py`, `methods/map_elites.py`, `novelty.py`, `surprise.py` | T4, T8, T10 |
-| **Marcelo** | `configs/*.yaml`, `datasets.py`, `models.py`, `methods/dice.py`, `wachter.py`, `face.py`, `scripts/run_batch.py` (with Mary) | T3, T5, T6, T9, T11, T13 |
+| **Marcelo** | `configs/*.yaml`, `datasets.py`, `models.py`, `methods/dice.py`, `wachter.py`, `face.py`, `scripts/run_batch.py` (with Mary), `simulation.py`, `examples/simulation.py` | T3, T5, T6, T9, T11, T13, simulation study |
 | **Vitor** | `metrics.py`, `tests/test_metrics.py`, `scripts/validate_moc.R` | T1, T7, T12 |
 | **Israel** | `notebooks/analysis.ipynb` (or Vitor), literature review, writing, references | T2, T14, T18 |
-| **TBD** | `methods/moc.py`, `examples/simulation.py` | T11, simulation study |
+| **TBD** | `methods/moc.py` | T11 |
 
 Order that unblocks the rest: `datasets.py` and `models.py` → `dice.py` and `wachter.py` → `moc.py` → `novelty.py` and `surprise.py` → `run_batch.py`.
 
@@ -150,6 +157,10 @@ python examples/demo_synthetic.py
 python scripts/run_batch.py --config configs/experiments/smoke.yaml            # ~2 min
 python scripts/run_batch.py --config configs/experiments/v1.yaml --dry-run    # grid and cost
 python scripts/run_batch.py --config configs/experiments/v1.yaml --jobs 4     # resumable
+python scripts/run_batch.py --config configs/experiments/full.yaml --jobs 6   # full grid (~6 h on 6 cores) -> results/full_rerun
+python scripts/run_batch.py --config configs/experiments/simulation.yaml      # simulation study -> results/simulation
+python scripts/build_report_data.py                                           # data of the results page (report/index.html)
+python scripts/compare_runs.py --old RUN_DIR --new RUN_DIR                    # row-by-row comparison of two runs
 ```
 
 Registering a new method for the batch runner (NS, NSLC, surprise, MOC):
@@ -191,7 +202,7 @@ arch.coverage(), arch.qd_score(), arch.n_strategies()
 - **Language:** Python. R is used only to validate the MOC port.
 - **MOC:** Python port using pymoo's NSGA-II, in two versions: `moc_original` (the R operators, for validation) and `moc_shared` (the CFQD operators, for the main comparison).
 - **CARLA:** not a dependency; the FACE code is extracted and adapted.
-- **DiCE:** `genetic` mode for all three models.
+- **DiCE:** `genetic` mode for all three models; the full grid also runs `random` mode (`dice_random`).
 - **Wachter:** does not run on RF (no gradient). Statistics: a global Friedman test without Wachter, plus a separate analysis with LR and NN only.
 - **Budget:** curves across budgets instead of a single budget. Baselines may use the extra budget.
 - **Validity is a constraint:** only valid counterfactuals enter the grid. **Fitness:** `1 / (1 + Guidotti distance)`.
@@ -216,7 +227,8 @@ arch.coverage(), arch.qd_score(), arch.n_strategies()
 
 - [ ] Fitness: include plausibility in elite quality? (plan, 5.3)
 - [ ] Nominal features in the descriptor: today a change only in a nominal feature counts as "increased". Keep it, add a "changed" state, or handle it separately?
-- [ ] Calibrate the effort bins on one dataset before the full run.
+- [ ] Calibrate the effort bins on one dataset before the next run. The full run used uncalibrated bins
+  (`effort_edges: [0.1, 0.25, 0.5, 1.0]`); see concern C11 in the full-run report.
 - [x] Check `german_credit.yaml` against the T6 constraint table.
 - [x] HELOC: OpenML 45554 v2 confirmed (md5 pinned). Missing values: indicator + sentinel on the three big columns.
 - [ ] HELOC: the "missing = never happened" test holds only for `MSinceMostRecentDelq` (95%); it FAILS for
@@ -228,6 +240,8 @@ arch.coverage(), arch.qd_score(), arch.n_strategies()
 - [ ] Integer-valued numeric features (age, counts) are mutated to fractional values by `operators.mutate`
   (DiCE rounds them). Add an `integer` flag to `Feature` and round in `clip`?
 - [ ] MOC owner (plan, pending 1).
-- [ ] Wachter reaches 1.00 on Adult + NN vs 0.50 in CARLA (plan flag). Stop rule and lambda schedule are CARLA's;
-  the difference is the model and CARLA's timeout. Check with CARLA's ANN architecture.
-- [ ] Simulation study: small version by Dec 3; full design in the paper extension.
+- [ ] Wachter beats CARLA's success rate on Adult + NN (1.00 vs 0.50) and COMPAS + NN (0.94 vs 0.66), confirmed with
+  200 instances per cell (full-run report, §2.8). Stop rule and lambda schedule are CARLA's; the difference is the
+  model, the constraints and CARLA's timeout. Check with CARLA's ANN architecture.
+- [ ] Simulation study: the full design already ran on 2026-11-21 (`results/simulation`, full-run report §2.7);
+  the plan was a small version by Dec 3 and the full design in the paper extension.
