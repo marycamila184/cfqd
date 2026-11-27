@@ -1,4 +1,5 @@
 # Beyond Optimization: Quality-Diversity Search for Counterfactual Explanations
+<!-- MARY: o README diz que o título provisório agora é "CFQD: Benchmarking Quality-Diversity Algorithms for Counterfactual Explanations" (antes "Beyond Optimization: ..."). Qual vamos usar? -->
 
 **Draft — Abstract, Introduction and Related Work.** Written 2026-11-27 against branch `marcelo-21nov`
 (HEAD `f554cd9`). Numbers come from `reports/full_run_results.pt-BR.md` (full grid, re-run of 2026-11-22).
