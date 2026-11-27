@@ -12,9 +12,9 @@ from .schema import Constraint, DatasetSpec
 
 def repair(x_new: np.ndarray, x_orig: np.ndarray, spec: DatasetSpec) -> np.ndarray:
     """Project x_new onto the feasible set relative to the original instance."""
-    x = spec.clip(x_new.copy())
+    x = spec.clip(x_new.copy())  # clip() also pulls a sentinel back into the valid range
     for j, f in enumerate(spec.features):
-        if f.constraint.frozen:
+        if f.constraint.frozen or (f.sentinel is not None and x_orig[j] == f.sentinel):
             x[j] = x_orig[j]
         elif f.constraint == Constraint.INCREASE_ONLY and x[j] < x_orig[j]:
             x[j] = x_orig[j]

@@ -1,0 +1,20 @@
+# First version (deadline 03/12), plan 6.1 option 1: full grid in 2 datasets,
+# 10 instances and 3 seeds. Contradicts the "at least 10 seeds" of plan 5.6:
+# GROUP DECISION. German Credit (cheap) + Adult (has the CARLA references:
+# Wachter must NOT reach 1.00 on Adult + NN).
+# NS, NSLC, surprise and MOC enter here when registered in cfqd/experiment.py.
+name: v1
+datasets: [german_credit, adult]
+models: [lr, rf, nn]
+methods:
+  map_elites: {batch_size: 50, n_init: 200}
+  dice_genetic: {total_cfs: 10}
+  dice_random: {total_cfs: 10}
+  wachter: {}
+  face_knn: {n_neighbors: 50, frac: 0.4, max_pool: 2000}
+seeds: [0, 1, 2]
+budgets: [500, 1000, 2000, 5000, 10000]   # budget curves (plan 8, item 4)
+n_instances: 10
+effort_edges: [0.1, 0.25, 0.5, 1.0]       # Descriptor default; calibrate (README open issue)
+train_predictions: free                   # open decision, see methods/dice.py and face.py
+out: results/v1

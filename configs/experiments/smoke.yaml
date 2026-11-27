@@ -1,0 +1,15 @@
+# Smoke test: whole pipeline on German Credit in a few minutes.
+#   python scripts/run_batch.py --config configs/experiments/smoke.yaml
+name: smoke
+datasets: [german_credit]
+models: [lr, rf, nn]
+methods:
+  map_elites: {}
+  dice_genetic: {total_cfs: 10}
+  wachter: {}
+  face_knn: {}
+seeds: [0]
+budgets: [500, 2000]
+n_instances: 3
+train_predictions: free
+out: results/smoke

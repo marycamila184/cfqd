@@ -1,0 +1,417 @@
+<meta name="dash-one-writer">
+<style>
+  .cf { display: flex; flex-direction: column; gap: var(--cds-gap-xl); }
+  .cf h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+  .cf h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; text-wrap: balance; }
+  .cf p { margin: 0; max-width: 72ch; line-height: 1.5; }
+  .cf .muted { color: var(--color-fg-muted); }
+  .cf .lede { font-size: var(--cds-font-size-heading); line-height: 1.4; max-width: 60ch; }
+  .cf .num { font-variant-numeric: tabular-nums; }
+  .cf section { display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+  .cf .bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--cds-gap-sm) var(--cds-gap-md); }
+  .cf .legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-lg); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .cf .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .cf .sw { width: 14px; height: 3px; border-radius: 2px; display: inline-block; background: var(--color-fg-muted); }
+  .cf .chart { position: relative; min-height: 240px; display: flex; flex-wrap: wrap; gap: var(--cds-gap-lg); }
+  .cf .panel { flex: 1 1 260px; min-width: 0; }
+  .cf .panel-title { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-bottom: 4px; }
+  .cf .chart svg text { fill: var(--cds-text-secondary); font-size: var(--cds-font-size-caption); }
+  .cf .chart .grid line { stroke: var(--cds-chart-grid); }
+  .cf .chart .grid path, .cf .chart .axis path { stroke: var(--cds-chart-axis); }
+  .cf .chart .axis line { stroke: var(--cds-chart-axis); }
+  .cf .tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: 6px 8px; font-size: var(--cds-font-size-caption); color: var(--color-fg); white-space: nowrap; z-index: 2; }
+  .cf .tablewrap { overflow-x: auto; }
+  .cf table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .cf th, .cf td { padding: 6px 10px; border-bottom: 1px solid var(--color-border-line); text-align: right; white-space: nowrap; }
+  .cf th { color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); }
+  .cf th:first-child, .cf td:first-child, .cf th.l, .cf td.l { text-align: left; }
+  .cf tr.qd td { font-weight: var(--cds-font-weight-medium); }
+  .cf .bad { color: var(--color-bad); }
+  .cf .warn { color: var(--color-warn); }
+  .cf ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; max-width: 80ch; line-height: 1.45; }
+  .cf details summary { cursor: pointer; color: var(--color-fg-muted); }
+  .cf details > div { margin-top: var(--cds-gap-sm); display: flex; flex-direction: column; gap: 6px; }
+</style>
+
+<div class="cf">
+  <header id="top" style="display:flex;flex-direction:column;gap:var(--cds-gap-sm)">
+    <h1>CFQD Benchmark Results</h1>
+    <p class="lede" id="takeaway">At the largest budget, MAP-Elites fills more of the strategy map than the best baseline on
+      <b class="num" data-draw="h-wins" data-source="comparison" data-field="me_ahead">—</b> of
+      <b class="num" data-draw="h-n" data-source="comparison" data-field="dataset">—</b> datasets with results so far.
+      Counterfactuals that violate a constraint:
+      <b class="num" data-draw="h-viol" data-source="overview" data-field="violations">—</b>.</p>
+    <p class="muted" id="progress-line">Batch run, configurations finished per dataset (3 models × 5 methods × 10 seeds, minus Wachter on random forests):
+      <span data-draw="progress-list" data-source="progress">—</span></p>
+  </header>
+
+  <section id="comparison">
+    <h2>MAP-Elites against the best baseline, per dataset</h2>
+    <p class="muted">Means over the three models at 10,000 queries. The best baseline is the one with the highest mean coverage on that dataset. Coverage is the share of the dataset's feasible strategy × effort cells filled by valid counterfactuals.</p>
+    <div class="tablewrap">
+      <table id="comparison-table" data-source="comparison" data-row-key="dataset">
+        <thead><tr>
+          <th class="l" data-field="name">Dataset</th>
+          <th data-field="feasible_cells">Feasible cells</th>
+          <th data-field="me_coverage">MAP-Elites coverage</th>
+          <th class="l" data-field="baseline">Best baseline</th>
+          <th data-field="baseline_coverage">Its coverage</th>
+          <th data-field="me_strategies">MAP-Elites strategies</th>
+          <th data-field="baseline_strategies">Baseline strategies</th>
+          <th data-field="me_dist_min">MAP-Elites min distance</th>
+          <th data-field="baseline_dist_min">Baseline min distance</th>
+        </tr></thead>
+        <tbody data-draw="comparison-rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="dataset">
+    <div class="bar">
+      <h2>Results for one dataset</h2>
+      <select class="dash-select" id="ds-select" aria-label="Dataset" data-draw="ds-select" data-source="progress"></select>
+    </div>
+    <p class="muted">Each configuration explains 20 unfavorable test instances. Values are means over 10 seeds of the per-seed means; sd is across seeds.
+      This dataset has <b class="num" data-draw="ds-cells" data-source="overview" data-field="feasible_cells">—</b> feasible cells;
+      its actionable groups are <span data-draw="ds-groups" data-source="overview" data-field="groups">—</span>.</p>
+    <div class="tablewrap">
+      <table id="overview-table" data-source="overview" data-row-key="key">
+        <thead><tr>
+          <th class="l" data-field="model">Model</th>
+          <th class="l" data-field="method">Method</th>
+          <th data-field="success">Success</th>
+          <th data-field="coverage">Coverage</th>
+          <th data-field="coverage_sd">± sd</th>
+          <th data-field="n_strategies">Strategies</th>
+          <th data-field="n_strategies_sd">± sd</th>
+          <th data-field="n_valid">Valid CFs</th>
+          <th data-field="dist_min">Min distance</th>
+          <th data-field="l0_mean">Features changed</th>
+          <th data-field="diversity">Diversity</th>
+          <th data-field="redundancy_mean">Redundancy</th>
+          <th data-field="violations">Violations</th>
+          <th data-field="queries_median">Queries (median)</th>
+        </tr></thead>
+        <tbody data-draw="overview-rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="curves">
+    <h2>Coverage of the strategy map as the budget grows</h2>
+    <p class="muted">For the dataset selected above. A flat line means extra budget does not change what the method returns. Budget on a log scale; point at a panel to read the values.</p>
+    <div class="legend" id="legend">
+      <span><i class="sw" data-method="map_elites"></i>MAP-Elites</span>
+      <span><i class="sw" data-method="dice_genetic"></i>DiCE (genetic)</span>
+      <span><i class="sw" data-method="dice_random"></i>DiCE (random)</span>
+      <span><i class="sw" data-method="wachter"></i>Wachter</span>
+      <span><i class="sw" data-method="face_knn"></i>FACE</span>
+    </div>
+    <div class="chart" id="chart-coverage" data-source="curves" data-draw="chart-coverage" role="img" aria-label="Coverage of feasible strategy cells versus query budget, one panel per model, one line per method"></div>
+  </section>
+
+  <section id="strategies">
+    <h2>Distinct strategies found as the budget grows</h2>
+    <p class="muted">A strategy is the up / down / unchanged pattern over the dataset's actionable groups.</p>
+    <div class="chart" id="chart-strategies" data-source="curves" data-draw="chart-strategies" role="img" aria-label="Distinct strategies found versus query budget, one panel per model, one line per method"></div>
+  </section>
+
+  <section id="validation">
+    <h2>Validation checks</h2>
+    <p class="muted">Explained models: test accuracy over the seeds trained, against the accuracies Guidotti (2024) reports for the same 70/30 protocol.</p>
+    <div class="tablewrap">
+      <table id="accuracy-table" data-source="accuracy" data-row-key="key">
+        <thead><tr>
+          <th class="l" data-field="dataset">Dataset</th>
+          <th class="l" data-field="model">Model</th>
+          <th data-field="acc_mean">Accuracy</th>
+          <th data-field="acc_sd">± sd</th>
+          <th data-field="seeds">Seeds</th>
+          <th data-field="guidotti">Guidotti</th>
+        </tr></thead>
+        <tbody data-draw="accuracy-rows"></tbody>
+      </table>
+    </div>
+    <p class="muted">Baselines against the success rates published by CARLA (Pawelczyk et al., 2021): budget 10,000, 10 instances, seed 0. CARLA's Wachter ignores actionability constraints; ours enforces them.</p>
+    <div class="tablewrap">
+      <table id="carla-table" data-source="carla" data-row-key="key">
+        <thead><tr>
+          <th class="l" data-field="method">Method</th>
+          <th class="l" data-field="dataset">Dataset</th>
+          <th class="l" data-field="model">Model</th>
+          <th data-field="success">Success</th>
+          <th data-field="carla">CARLA</th>
+          <th data-field="violations">Violations</th>
+        </tr></thead>
+        <tbody data-draw="carla-rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="decisions">
+    <h2>Decisions the group still needs to make</h2>
+    <ul>
+      <li><b>HELOC missing values.</b> "Missing means it never happened" holds only for MSinceMostRecentDelq (95%). It fails for NetFractionInstallBurden (6%) and MSinceMostRecentInqexcl7days (54%), whose sentinel now means "unknown" and is frozen.</li>
+      <li><b>Training-data predictions.</b> DiCE's KD-tree and FACE's graph label the training data without charging the budget. Counting them would cost DiCE 31k queries per instance on Adult.</li>
+      <li><b>COMPAS actionability.</b> Strict actionability leaves no actionable feature (nothing can run); Guidotti's leaves one group. The runs use Guidotti's.</li>
+      <li><b>COMPAS accuracy rule.</b> The plan reads accuracy above 0.65 as label leakage. Ours is 0.67 with no leaking column, matching Dressel and Farid (2018).</li>
+      <li><b>Wachter on Adult with the neural network</b> reaches 1.00 against 0.50 in CARLA, with CARLA's stop rule and lambda schedule. The difference is the model and CARLA's timeout.</li>
+      <li><b>MOC</b> still has no owner, and NS, NSLC and surprise are not in these runs yet.</li>
+    </ul>
+  </section>
+
+  <details id="definitions">
+    <summary>Definitions and protocol</summary>
+    <div>
+      <p><b>Success</b>: share of instances with at least one valid counterfactual. <b>Valid</b>: the model predicts the favorable class.</p>
+      <p><b>Min distance</b>: Guidotti distance (MAD-weighted L1 on numeric features plus mismatch share on categorical ones) of the closest valid counterfactual. <b>Features changed</b>: mean L0.</p>
+      <p><b>Diversity</b>: mean pairwise distance among valid counterfactuals. <b>Redundancy</b>: changed features that can be reverted without losing validity (CARLA).</p>
+      <p><b>Budget</b>: model queries counted by a wrapper around every model call, gradient steps included. Each budget is an independent run with the same search seed.</p>
+      <p><b>Fixes applied before these runs</b>: DiCE's KD-tree initialisation no longer stalls in uncapped random sampling (COMPAS went from 0.0 to 0.9–1.0 success); FACE checks up to 500 projected candidates.</p>
+    </div>
+  </details>
+</div>
+
+<script>
+  window.CF = window.CF || {};
+  CF.METHODS = ['map_elites', 'dice_genetic', 'dice_random', 'wachter', 'face_knn'];
+  CF.BASELINES = ['dice_genetic', 'dice_random', 'wachter', 'face_knn'];
+  CF.LABEL = { map_elites: 'MAP-Elites', dice_genetic: 'DiCE (genetic)', dice_random: 'DiCE (random)', wachter: 'Wachter', face_knn: 'FACE' };
+  CF.MODEL = { lr: 'Logistic regression', rf: 'Random forest', nn: 'Neural network' };
+  CF.DSNAME = { german_credit: 'German Credit', adult: 'Adult', heloc: 'HELOC', gmc: 'Give Me Some Credit', compas_guidotti: 'COMPAS' };
+  CF.ds = () => dash.params().dataset || 'german_credit';
+  CF.color = (m) => dash.colors[CF.METHODS.indexOf(m) % dash.colors.length];
+  CF.f2 = d3.format('.2f');
+  CF.f3 = d3.format('.3f');
+  CF.f1 = d3.format('.1f');
+  CF.int = d3.format(',.0f');
+
+  document.querySelectorAll('.cf .sw[data-method]').forEach((el) => { el.style.background = CF.color(el.getAttribute('data-method')); });
+
+  dash.calc('comparison', {
+    title: 'MAP-Elites vs best baseline per dataset',
+    description: 'Per dataset: means over the three models at the largest budget; the best baseline is the one with the highest mean coverage.',
+    inputs: ['overview'],
+    fn: (overview) => {
+      const names = { german_credit: 'German Credit', adult: 'Adult', heloc: 'HELOC', gmc: 'Give Me Some Credit', compas_guidotti: 'COMPAS' };
+      const base = { dice_genetic: 'DiCE genetic', dice_random: 'DiCE random', wachter: 'Wachter', face_knn: 'FACE' };
+      const r3 = (v) => (v === null || v === undefined ? null : Math.round(v * 1000) / 1000);
+      const mean = (rows, m, f) => { const v = rows.filter((r) => r.method === m && r[f] !== null).map((r) => r[f]); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+      const out = [];
+      for (const ds of Object.keys(names)) {
+        const rows = overview.filter((r) => r.dataset === ds);
+        if (!rows.length) continue;
+        const me = mean(rows, 'map_elites', 'coverage');
+        const ranked = Object.keys(base).map((m) => ({ m, v: mean(rows, m, 'coverage') })).filter((d) => d.v !== null).sort((a, b) => b.v - a.v);
+        const b = ranked.length ? ranked[0].m : null;
+        out.push({ dataset: ds, name: names[ds], feasible_cells: rows[0].feasible_cells,
+                   me_coverage: r3(me), baseline: b ? base[b] : null, baseline_coverage: b ? r3(ranked[0].v) : null,
+                   me_strategies: r3(mean(rows, 'map_elites', 'n_strategies')), baseline_strategies: b ? r3(mean(rows, b, 'n_strategies')) : null,
+                   me_dist_min: r3(mean(rows, 'map_elites', 'dist_min')), baseline_dist_min: b ? r3(mean(rows, b, 'dist_min')) : null,
+                   me_ahead: me !== null && b !== null && me > ranked[0].v ? 1 : 0 });
+      }
+      return out;
+    }
+  });
+
+  dash.draw('h-wins', (el) => {
+    const c = dash.data('comparison');
+    el.textContent = c.status === 'ok' && c.data.length ? CF.int(c.data.reduce((a, r) => a + r.me_ahead, 0)) : '—';
+  });
+  dash.draw('h-n', (el) => {
+    const c = dash.data('comparison');
+    el.textContent = c.status === 'ok' && c.data.length ? CF.int(c.data.length) : '—';
+  });
+  dash.draw('h-viol', (el) => {
+    const o = dash.data('overview');
+    el.textContent = o.status === 'ok' ? CF.int(o.data.reduce((a, r) => a + (r.violations || 0), 0)) : '—';
+  });
+  dash.draw('progress-list', (el) => {
+    const p = dash.data('progress');
+    if (p.status !== 'ok') { el.textContent = '—'; return; }
+    el.textContent = p.data.map((r) => `${CF.DSNAME[r.dataset] || r.dataset} ${r.done}/${r.total}`).join(' · ');
+  });
+
+  dash.draw('ds-select', (sel) => {
+    const p = dash.data('progress');
+    const rows = p.status === 'ok' ? p.data.filter((r) => r.done > 0) : [];
+    sel.replaceChildren(...rows.map((r) => new Option(
+      r.done < r.total ? `${CF.DSNAME[r.dataset] || r.dataset} (${r.done}/${r.total} so far)` : (CF.DSNAME[r.dataset] || r.dataset), r.dataset)));
+    sel.value = CF.ds();
+    sel.onchange = () => dash.setParams({ dataset: sel.value });
+  });
+  CF.dsInfo = (el, field) => {
+    const o = dash.data('overview');
+    const r = o.status === 'ok' ? o.data.find((d) => d.dataset === CF.ds()) : null;
+    el.textContent = r ? (typeof r[field] === 'number' ? CF.int(r[field]) : r[field]) : '—';
+  };
+  dash.draw('ds-cells', (el) => CF.dsInfo(el, 'feasible_cells'));
+  dash.draw('ds-groups', (el) => CF.dsInfo(el, 'groups'));
+</script>
+
+<script>
+  CF.fillTable = (tbody, rows, cols, keyOf, rowClass) => {
+    tbody.replaceChildren();
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      tr.setAttribute('data-key', keyOf(r));
+      if (rowClass) tr.className = rowClass(r);
+      for (const [field, fmt, cls] of cols) {
+        const td = document.createElement('td');
+        if (cls) td.className = typeof cls === 'function' ? cls(r) : cls;
+        const v = r[field];
+        td.textContent = v === null || v === undefined ? '—' : fmt(v);
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+  };
+  CF.tableState = (tbody, d, ncol) => {
+    if (d.status === 'ok') return true;
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = ncol;
+    td.className = 'l muted';
+    td.textContent = d.status === 'error' ? 'This table could not load its data.' : '—';
+    tr.appendChild(td);
+    tbody.replaceChildren(tr);
+    return false;
+  };
+  CF.txt = (v) => v;
+
+  dash.draw('comparison-rows', (tbody) => {
+    const d = dash.data('comparison');
+    if (!CF.tableState(tbody, d, 9)) return;
+    CF.fillTable(tbody, d.data, [
+      ['name', CF.txt, 'l'], ['feasible_cells', CF.int], ['me_coverage', CF.f3], ['baseline', CF.txt, 'l'],
+      ['baseline_coverage', CF.f3], ['me_strategies', CF.f1], ['baseline_strategies', CF.f1],
+      ['me_dist_min', CF.f3], ['baseline_dist_min', CF.f3],
+    ], (r) => r.dataset);
+  });
+
+  dash.draw('overview-rows', (tbody) => {
+    const d = dash.data('overview');
+    if (!CF.tableState(tbody, d, 14)) return;
+    const order = { lr: 0, rf: 1, nn: 2 };
+    const rows = d.data.filter((r) => r.dataset === CF.ds())
+      .sort((a, b) => (order[a.model] - order[b.model]) || (CF.METHODS.indexOf(a.method) - CF.METHODS.indexOf(b.method)));
+    CF.fillTable(tbody, rows, [
+      ['model', CF.txt, 'l'], ['method', CF.txt, 'l'],
+      ['success', CF.f2], ['coverage', CF.f3], ['coverage_sd', CF.f3],
+      ['n_strategies', CF.f1], ['n_strategies_sd', CF.f1], ['n_valid', CF.f1],
+      ['dist_min', CF.f3], ['l0_mean', CF.f2], ['diversity', CF.f3], ['redundancy_mean', CF.f2],
+      ['violations', CF.int, (r) => (r.violations > 0 ? 'bad' : '')], ['queries_median', CF.int],
+    ], (r) => r.key, (r) => (r.method === 'map_elites' ? 'qd' : ''));
+  });
+
+  dash.draw('accuracy-rows', (tbody) => {
+    const d = dash.data('accuracy');
+    if (!CF.tableState(tbody, d, 6)) return;
+    CF.fillTable(tbody, d.data, [
+      ['dataset', CF.txt, 'l'], ['model', CF.txt, 'l'], ['acc_mean', CF.f3],
+      ['acc_sd', CF.f3], ['seeds', CF.int], ['guidotti', CF.f2],
+    ], (r) => r.key);
+  });
+
+  dash.draw('carla-rows', (tbody) => {
+    const d = dash.data('carla');
+    if (!CF.tableState(tbody, d, 6)) return;
+    CF.fillTable(tbody, d.data, [
+      ['method', CF.txt, 'l'], ['dataset', CF.txt, 'l'], ['model', CF.txt, 'l'],
+      ['success', CF.f2, (r) => (r.success + 1e-9 < r.carla - 0.25 ? 'warn' : '')], ['carla', CF.f2],
+      ['violations', CF.int, (r) => (r.violations > 0 ? 'bad' : '')],
+    ], (r) => r.key);
+  });
+</script>
+
+<script>
+  CF.curves = (el, metric, ylabel) => {
+    const d = dash.data('curves');
+    if (d.status !== 'ok') {
+      el.replaceChildren();
+      const p = document.createElement('p');
+      p.className = 'muted';
+      p.textContent = d.status === 'error' ? 'This chart could not load its data.' : '—';
+      el.appendChild(p);
+      return;
+    }
+    const rows = d.data.filter((r) => r.dataset === CF.ds() && r[metric] !== null);
+    const models = ['lr', 'rf', 'nn'].filter((m) => rows.some((r) => r.model === m));
+    el.replaceChildren();
+    const tip = document.createElement('div');
+    tip.className = 'tip';
+    tip.hidden = true;
+    const yMax = d3.max(rows, (r) => r[metric]) || 1;
+    const budgets = [...new Set(rows.map((r) => r.budget))].sort((a, b) => a - b);
+    for (const model of models) {
+      const panel = document.createElement('div');
+      panel.className = 'panel';
+      const title = document.createElement('div');
+      title.className = 'panel-title';
+      title.textContent = CF.MODEL[model];
+      panel.appendChild(title);
+      el.appendChild(panel);
+      const W = Math.max(220, panel.clientWidth || 300), H = 210;
+      const sub = rows.filter((r) => r.model === model);
+      const svg = d3.select(panel).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`)
+        .attr('role', 'img').attr('aria-label', `${ylabel} versus budget, ${CF.MODEL[model]}`);
+      const yTmp = d3.scaleLinear().domain([0, yMax]).nice();
+      const yAxisG = svg.append('g').attr('class', 'axis').call(d3.axisLeft(yTmp).ticks(4).tickSize(0));
+      let wMax = 0;
+      yAxisG.selectAll('text').each(function () { wMax = Math.max(wMax, this.getComputedTextLength()); });
+      yAxisG.remove();
+      const m = { l: Math.ceil(wMax) + 10, r: 12, t: 8, b: 26 };
+      const x = d3.scaleLog().domain(d3.extent(budgets)).range([m.l, W - m.r]);
+      const y = d3.scaleLinear().domain([0, yMax]).nice().range([H - m.b, m.t]);
+      svg.append('g').attr('class', 'grid').attr('transform', `translate(${m.l},0)`)
+        .call(d3.axisLeft(y).ticks(4).tickSize(-(W - m.l - m.r)).tickFormat(''))
+        .call((g) => g.select('.domain').remove());
+      svg.append('g').attr('class', 'axis').attr('transform', `translate(${m.l},0)`)
+        .call(d3.axisLeft(y).ticks(4).tickSize(0).tickPadding(6)).call((g) => g.select('.domain').remove());
+      svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - m.b})`)
+        .call(d3.axisBottom(x).tickValues(budgets).tickFormat((v) => (v >= 1000 ? `${v / 1000}k` : v)).tickSize(3));
+      for (const method of CF.METHODS) {
+        const s = sub.filter((r) => r.method === method).sort((a, b) => a.budget - b.budget);
+        if (!s.length) continue;
+        const c = CF.color(method);
+        svg.append('path').datum(s).attr('fill', 'none').style('stroke', c).attr('stroke-width', 2)
+          .attr('d', d3.line().x((r) => x(r.budget)).y((r) => y(r[metric])));
+        svg.selectAll(null).data(s).join('circle').attr('cx', (r) => x(r.budget)).attr('cy', (r) => y(r[metric]))
+          .attr('r', 4).style('fill', c).style('stroke', 'var(--color-bg)').attr('stroke-width', 1.5);
+      }
+      svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b)
+        .attr('fill', 'transparent')
+        .on('pointermove', (ev) => {
+          const [px] = d3.pointer(ev);
+          const b = budgets.reduce((best, v) => (Math.abs(x(v) - px) < Math.abs(x(best) - px) ? v : best), budgets[0]);
+          const at = sub.filter((r) => r.budget === b).sort((a, c) => c[metric] - a[metric]);
+          tip.replaceChildren();
+          const head = document.createElement('div');
+          head.textContent = `${CF.MODEL[model]} · ${CF.int(b)} queries`;
+          head.style.fontWeight = 'var(--cds-font-weight-medium)';
+          tip.appendChild(head);
+          for (const r of at) {
+            const line = document.createElement('div');
+            line.textContent = `${CF.LABEL[r.method]}: ${metric === 'coverage' ? CF.f3(r[metric]) : CF.f1(r[metric])}`;
+            line.style.color = CF.color(r.method);
+            tip.appendChild(line);
+          }
+          tip.hidden = false;
+          const box = el.getBoundingClientRect(), pb = panel.getBoundingClientRect();
+          const left = pb.left - box.left + (x(b) / W) * pb.width + 12;
+          tip.style.left = `${Math.min(left, box.width - 180)}px`;
+          tip.style.top = `${pb.top - box.top + 24}px`;
+        })
+        .on('pointerleave', () => { tip.hidden = true; });
+    }
+    if (!models.length) {
+      const p = document.createElement('p');
+      p.className = 'muted';
+      p.textContent = 'No results for this dataset yet.';
+      el.appendChild(p);
+    }
+    el.appendChild(tip);
+  };
+  dash.draw('chart-coverage', (el) => CF.curves(el, 'coverage', 'Coverage'));
+  dash.draw('chart-strategies', (el) => CF.curves(el, 'n_strategies', 'Distinct strategies'));
+</script>

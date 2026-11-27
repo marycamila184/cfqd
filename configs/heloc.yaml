@@ -1,0 +1,67 @@
+# HELOC (FICO Explainable ML Challenge), via OpenML 45554 "FICO-HELOC-cleaned" v2.
+# Cite FICO as the original source. The OpenML version already has the
+# -9-only rows removed and -9/-8/-7 as missing in the numeric columns.
+#
+# Preprocessing (plan 3.2 and 3.3):
+#   - MaxDelq2PublicRecLast12M and MaxDelqEver arrive as NOMINAL with -9 among
+#     the levels. They are ordinal (severity scale): -9 -> missing BEFORE the
+#     conversion, then the codes are rank-encoded 0..k-1 (higher = better).
+#   - The three columns with large missing shares get an explicit "does not
+#     apply" indicator (<col>_NA, excluded from mutation) plus an out-of-range
+#     sentinel (-1). The sentinel makes the feature frozen for instances that
+#     hold it, and forbids moving into it: going from "never delinquent" to a
+#     number is a worsening, not recourse.
+#   - The other seven columns (all below 9% missing) get median imputation.
+#   - datasets.heloc_missing_tests() checks the "does not apply" hypothesis
+#     against the sibling columns; the result is written to meta.json.
+#     RESULT (20/11): confirmed only for MSinceMostRecentDelq (95.2%).
+#     NetFractionInstallBurden: 5.6% (94% of the missing DO have installment trades);
+#     MSinceMostRecentInqexcl7days: 53.9% (46% of the missing have an inquiry in
+#     the last 6 months). For these two the sentinel means "UNKNOWN", not
+#     "never happened"; freezing an unknown value is still the conservative
+#     choice and avoids the artificial median spike. GROUP DECISION PENDING.
+#   - NumInstallTradesWBalance: min observed is 1 and all 861 missing are also
+#     missing in NetFractionInstallBurden -> missing probably means 0. Median
+#     imputation kept as planned; flagged.
+name: heloc
+target: RiskPerformance
+favorable_class: Good
+source:
+  kind: openml
+  id: 45554
+  version: 2
+  md5: 2c675bd4d9cfc63d97771af7a65fd417
+preprocessing:
+  ordinal_from_nominal: [MaxDelq2PublicRecLast12M, MaxDelqEver]
+  missing_indicator: [MSinceMostRecentDelq, NetFractionInstallBurden, MSinceMostRecentInqexcl7days]
+  sentinel: -1
+  missing_default: median
+groups: [revolving_utilization, installment_utilization, recent_inquiries, portfolio_volume]
+ungrouped: [MSinceOldestTradeOpen, MSinceMostRecentTradeOpen, AverageMInFile, MSinceMostRecentDelq]
+features:
+  - {name: ExternalRiskEstimate,               type: numeric, constraint: excluded}      # score derived from the other features
+  - {name: MSinceOldestTradeOpen,              type: numeric, constraint: increase_only}
+  - {name: MSinceMostRecentTradeOpen,          type: numeric, constraint: free}
+  - {name: AverageMInFile,                     type: numeric, constraint: increase_only}
+  - {name: NumSatisfactoryTrades,              type: numeric, constraint: free,          group: portfolio_volume}
+  - {name: NumTrades60Ever2DerogPubRec,        type: numeric, constraint: irreversible}
+  - {name: NumTrades90Ever2DerogPubRec,        type: numeric, constraint: irreversible}
+  - {name: PercentTradesNeverDelq,             type: numeric, constraint: irreversible}
+  - {name: MSinceMostRecentDelq,               type: numeric, constraint: increase_only, sentinel: -1}
+  - {name: MSinceMostRecentDelq_NA,            type: nominal, constraint: excluded}
+  - {name: MaxDelq2PublicRecLast12M,           type: ordinal, constraint: irreversible}
+  - {name: MaxDelqEver,                        type: ordinal, constraint: irreversible}
+  - {name: NumTotalTrades,                     type: numeric, constraint: free,          group: portfolio_volume}
+  - {name: NumTradesOpeninLast12M,             type: numeric, constraint: free,          group: portfolio_volume}
+  - {name: PercentInstallTrades,               type: numeric, constraint: free,          group: installment_utilization}
+  - {name: MSinceMostRecentInqexcl7days,       type: numeric, constraint: increase_only, group: recent_inquiries, sentinel: -1}
+  - {name: MSinceMostRecentInqexcl7days_NA,    type: nominal, constraint: excluded}
+  - {name: NumInqLast6M,                       type: numeric, constraint: free,          group: recent_inquiries}
+  - {name: NumInqLast6Mexcl7days,              type: numeric, constraint: free,          group: recent_inquiries}
+  - {name: NetFractionRevolvingBurden,         type: numeric, constraint: free,          group: revolving_utilization}
+  - {name: NetFractionInstallBurden,           type: numeric, constraint: free,          group: installment_utilization, sentinel: -1}
+  - {name: NetFractionInstallBurden_NA,        type: nominal, constraint: excluded}
+  - {name: NumRevolvingTradesWBalance,         type: numeric, constraint: free,          group: revolving_utilization}
+  - {name: NumInstallTradesWBalance,           type: numeric, constraint: free,          group: installment_utilization}
+  - {name: NumBank2NatlTradesWHighUtilization, type: numeric, constraint: free,          group: revolving_utilization}
+  - {name: PercentTradesWBalance,              type: numeric, constraint: free,          group: portfolio_volume}

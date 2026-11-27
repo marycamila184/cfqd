@@ -47,7 +47,9 @@ def redundancy(model, x: np.ndarray, x_cf: np.ndarray, desired: int) -> int:
 def constraint_violations(x: np.ndarray, x_cf: np.ndarray, spec: DatasetSpec) -> int:
     v = 0
     for j, f in enumerate(spec.features):
-        if f.constraint.frozen and abs(x_cf[j] - x[j]) > 1e-9:
+        if f.sentinel is not None and (x[j] == f.sentinel) != (x_cf[j] == f.sentinel):
+            v += 1  # left "does not apply", or moved into it
+        elif f.constraint.frozen and abs(x_cf[j] - x[j]) > 1e-9:
             v += 1
         elif f.constraint == Constraint.INCREASE_ONLY and x_cf[j] < x[j] - 1e-9:
             v += 1

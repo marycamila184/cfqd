@@ -1,0 +1,16 @@
+# Simulation study (plan, section 7): known routes, route recall per method.
+# simulation_shuffled = same data, descriptor groups NOT aligned with the routes.
+name: simulation
+datasets: [simulation, simulation_shuffled]
+models: [lr, rf, nn]
+methods:
+  map_elites: {batch_size: 50, n_init: 200}
+  dice_genetic: {total_cfs: 10}
+  wachter: {}
+  face_knn: {n_neighbors: 50, frac: 0.4, max_pool: 2000}
+seeds: [0, 1, 2]
+budgets: [500, 2000, 10000]
+n_instances: 10
+effort_edges: [0.1, 0.25, 0.5, 1.0]
+train_predictions: free
+out: results/simulation

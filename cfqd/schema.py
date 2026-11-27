@@ -42,6 +42,10 @@ class Feature:
     high: float | None = None
     n_categories: int | None = None
     mad: float | None = None       # median absolute deviation (Guidotti distance)
+    # Out-of-range value meaning "does not apply" (HELOC missing values, T6 3.3).
+    # Per-instance rule enforced by operators.repair: if the ORIGINAL instance
+    # holds the sentinel the feature is frozen; otherwise it may never move to it.
+    sentinel: float | None = None
 
     @property
     def is_categorical(self) -> bool:
@@ -88,6 +92,7 @@ class DatasetSpec:
                 ftype=FeatureType(f["type"]),
                 constraint=Constraint(f.get("constraint", "free")),
                 group=f.get("group"),
+                sentinel=f.get("sentinel"),
             )
             for f in cfg["features"]
         ]
@@ -100,6 +105,8 @@ class DatasetSpec:
         for j, f in enumerate(self.features):
             col = X[:, j]
             col = col[~np.isnan(col)]
+            if f.sentinel is not None:  # the sentinel is not part of the valid range
+                col = col[col != f.sentinel]
             f.low, f.high = float(col.min()), float(col.max())
             if f.is_categorical:
                 f.n_categories = int(f.high) + 1

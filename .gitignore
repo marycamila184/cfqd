@@ -1,6 +1,36 @@
 __pycache__/
 *.pyc
+*.tmp
 .pytest_cache/
+.ipynb_checkpoints/
 .venv/
 venv/
-results/
+models/
+data/raw/
+data/processed/
+# data/manifest.jsonl IS versioned: it pins id, version and md5 of every dataset
+
+# Results. Everything here can be regenerated, but the full run costs ~6 h of CPU.
+# Versioned: what the statistics and the results page need, i.e. the per-instance
+# summaries and the manifest of the full run and of the CARLA check (~12 MB).
+# Not versioned: runs/ (one row per counterfactual, ~200 MB), logs, notes and the
+# smaller demo runs (curve_demo, simulation_quick, smoke), which the notebooks rebuild.
+results/*
+!results/full/
+results/full/*
+!results/full/summary/
+!results/full/manifest.jsonl
+!results/carla_check/
+results/carla_check/*
+!results/carla_check/summary/
+!results/carla_check/manifest.jsonl
+# Re-run of the full grid on the committed code (2026-11-22, concern C4) and the full simulation.
+!results/full_rerun/
+results/full_rerun/*
+!results/full_rerun/summary/
+!results/full_rerun/manifest.jsonl
+!results/full_rerun/compare_with_full.csv
+!results/simulation/
+results/simulation/*
+!results/simulation/summary/
+!results/simulation/manifest.jsonl

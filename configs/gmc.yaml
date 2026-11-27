@@ -1,0 +1,35 @@
+# Give Me Some Credit (Kaggle 2011), via OpenML 45577 (original column names;
+# OpenML 46929 is the same data curated for TabArena, with the target renamed).
+# Preprocessing:
+#   - rows with missing MonthlyIncome / NumberOfDependents dropped (as in CARLA,
+#     keeps the CARLA success rates comparable)
+#   - rows with the 96/98 error codes in the past-due counters dropped
+#   - heavy tails (RevolvingUtilization up to 50,708; DebtRatio up to 329,664)
+#     winsorized at the 99.5th percentile, otherwise "range from the data"
+#     makes the mutation step meaningless (sigma = 0.1 * range)
+#   - max_rows: optional stratified subsample (null = keep all, ~120k rows)
+name: gmc
+target: SeriousDlqin2yrs
+favorable_class: "0"          # 1 = serious delinquency in two years
+source:
+  kind: openml
+  id: 45577
+  version: 1
+  md5: 53fbc48b682ecfac16697dfea4cb3c39
+preprocessing:
+  winsorize_upper: {quantile: 0.995, columns: [RevolvingUtilizationOfUnsecuredLines, DebtRatio, MonthlyIncome]}
+  drop_codes: {values: [96, 98], columns: [NumberOfTime30-59DaysPastDueNotWorse, NumberOfTimes90DaysLate, NumberOfTime60-89DaysPastDueNotWorse]}
+  max_rows: null
+groups: [utilization_debt, credit_lines, income_dependents]
+ungrouped: [age]
+features:
+  - {name: RevolvingUtilizationOfUnsecuredLines, type: numeric, constraint: free,          group: utilization_debt}
+  - {name: age,                                  type: numeric, constraint: increase_only}
+  - {name: NumberOfTime30-59DaysPastDueNotWorse, type: numeric, constraint: irreversible}
+  - {name: DebtRatio,                            type: numeric, constraint: free,          group: utilization_debt}
+  - {name: MonthlyIncome,                        type: numeric, constraint: free,          group: income_dependents}
+  - {name: NumberOfOpenCreditLinesAndLoans,      type: numeric, constraint: free,          group: credit_lines}
+  - {name: NumberOfTimes90DaysLate,              type: numeric, constraint: irreversible}
+  - {name: NumberRealEstateLoansOrLines,         type: numeric, constraint: free,          group: credit_lines}
+  - {name: NumberOfTime60-89DaysPastDueNotWorse, type: numeric, constraint: irreversible}
+  - {name: NumberOfDependents,                   type: numeric, constraint: free,          group: income_dependents}

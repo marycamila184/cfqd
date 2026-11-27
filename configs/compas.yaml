@@ -1,0 +1,29 @@
+# COMPAS (ProPublica, compas-scores-two-years.csv), STRICT actionability.
+# Standard ProPublica filter -> 6,172 of 7,214 rows:
+#   -30 <= days_b_screening_arrest <= 30, is_recid != -1,
+#   c_charge_degree != "O", score_text != "N/A"
+# two_year_recid is the LABEL and never an input (plan 3.2, decision 4).
+# Leakage guard: is_recid, is_violent_recid, decile_score, score_text, r_*,
+# vr_*, event, start/end are never used as inputs (datasets.COMPAS_LEAKY).
+#
+# Strict definition (the person can act): nothing is actionable -> g = 0, the
+# map of elites is EMPTY and QD cannot run. Kept for the record of open
+# decision 3 (plan, section 8). The runnable variant is compas_guidotti.yaml.
+name: compas
+target: two_year_recid
+favorable_class: 0            # 0 = did not recidivate within two years
+source:
+  kind: url
+  url: https://raw.githubusercontent.com/propublica/compas-analysis/master/compas-scores-two-years.csv
+groups: []
+ungrouped: []
+features:
+  - {name: age,             type: numeric, constraint: immutable}
+  - {name: sex,             type: nominal, constraint: immutable}
+  - {name: race,            type: nominal, constraint: immutable}
+  - {name: c_charge_degree, type: nominal, constraint: immutable}
+  - {name: priors_count,    type: numeric, constraint: irreversible}
+  - {name: juv_fel_count,   type: numeric, constraint: irreversible}
+  - {name: juv_misd_count,  type: numeric, constraint: irreversible}
+  - {name: juv_other_count, type: numeric, constraint: irreversible}
+  - {name: length_of_stay,  type: numeric, constraint: irreversible}  # days, c_jail_out - c_jail_in

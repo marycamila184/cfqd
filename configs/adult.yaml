@@ -1,0 +1,30 @@
+# Adult / Census Income (UCI 2): adult.data + adult.test (48,842 rows).
+# Preprocessing (plan 3.2, decision 1):
+#   - fnlwgt removed (survey sampling weight, not an attribute of the person)
+#   - education removed; education-num kept (same information; keeping both
+#     makes mutation incoherent)
+#   - rows with "?" (workclass, occupation, native-country) dropped
+#   - nominal levels coded 0..k-1 in alphabetical order (mapping in meta.json)
+name: adult
+target: income
+favorable_class: ">50K"
+source:
+  kind: uci
+  id: 2
+  url: https://archive.ics.uci.edu/static/public/2/adult.zip
+  members: [adult.data, adult.test]
+groups: [education, working_hours, employment, capital]
+ungrouped: [age]
+features:
+  - {name: age,            type: numeric, constraint: increase_only}
+  - {name: workclass,      type: nominal, constraint: free,          group: employment}
+  - {name: education-num,  type: numeric, constraint: increase_only, group: education}
+  - {name: marital-status, type: nominal, constraint: immutable}
+  - {name: occupation,     type: nominal, constraint: free,          group: employment}
+  - {name: relationship,   type: nominal, constraint: immutable}
+  - {name: race,           type: nominal, constraint: immutable}
+  - {name: sex,            type: nominal, constraint: immutable}
+  - {name: capital-gain,   type: numeric, constraint: free,          group: capital}
+  - {name: capital-loss,   type: numeric, constraint: free,          group: capital}
+  - {name: hours-per-week, type: numeric, constraint: free,          group: working_hours}
+  - {name: native-country, type: nominal, constraint: immutable}

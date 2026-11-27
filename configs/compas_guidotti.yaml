@@ -1,0 +1,23 @@
+# COMPAS with Guidotti's actionability: everything that is not a protected
+# attribute may change. Same data and preprocessing as compas.yaml (base: compas).
+# One actionable group (plan 3.5: g = 0-1). Open decision 3 (plan, section 8):
+# the group must choose between this file and the strict compas.yaml.
+name: compas_guidotti
+base: compas                  # reuse the raw file and preprocessing of compas
+target: two_year_recid
+favorable_class: 0
+source:
+  kind: url
+  url: https://raw.githubusercontent.com/propublica/compas-analysis/master/compas-scores-two-years.csv
+groups: [criminal_history]
+ungrouped: []
+features:
+  - {name: age,             type: numeric, constraint: immutable}
+  - {name: sex,             type: nominal, constraint: immutable}
+  - {name: race,            type: nominal, constraint: immutable}
+  - {name: c_charge_degree, type: nominal, constraint: immutable}
+  - {name: priors_count,    type: numeric, constraint: free, group: criminal_history}
+  - {name: juv_fel_count,   type: numeric, constraint: free, group: criminal_history}
+  - {name: juv_misd_count,  type: numeric, constraint: free, group: criminal_history}
+  - {name: juv_other_count, type: numeric, constraint: free, group: criminal_history}
+  - {name: length_of_stay,  type: numeric, constraint: free, group: criminal_history}

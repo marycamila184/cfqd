@@ -1,5 +1,12 @@
 numpy
 pandas
 scikit-learn
+scipy
 pyyaml
+pyarrow
+torch
+dice-ml==0.12
+matplotlib
 pytest
+ipykernel
+nbconvert

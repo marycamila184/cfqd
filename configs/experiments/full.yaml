@@ -1,0 +1,18 @@
+# Full grid of the plan (section 5.6): 5 datasets x 3 models x methods x 10 seeds.
+# Run --dry-run first: plan 6.1 estimates ~450 h with 9 methods and 20 instances.
+# compas (strict) is listed on purpose: it is skipped and the reason is printed.
+name: full
+datasets: [german_credit, adult, heloc, gmc, compas_guidotti, compas]
+models: [lr, rf, nn]
+methods:
+  map_elites: {batch_size: 50, n_init: 200}
+  dice_genetic: {total_cfs: 10}
+  dice_random: {total_cfs: 10}
+  wachter: {}
+  face_knn: {n_neighbors: 50, frac: 0.4, max_pool: 2000}
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+budgets: [500, 1000, 2000, 5000, 10000]
+n_instances: 20
+effort_edges: [0.1, 0.25, 0.5, 1.0]
+train_predictions: free
+out: results/full

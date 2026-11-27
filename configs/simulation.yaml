@@ -1,0 +1,24 @@
+# Simulation study with known routes (plan, section 7). See cfqd/simulation.py.
+#
+# FROZEN: these parameters were fixed on the date below, BEFORE running any
+# method. Do not tune them after looking at results; if they must change,
+# create a new file (simulation_v2.yaml) and report both. The parameter hash
+# is written to data/manifest.jsonl and to every run manifest.
+name: simulation
+target: y
+favorable_class: 1
+source: {kind: synthetic}
+frozen_on: "2026-11-20"
+generator:
+  seed: 20261120
+  n_samples: 6000
+  n_routes: 4               # K known routes; route 0 is the near one
+  features_per_route: 2
+  n_noise: 2                # mutable features with no effect (outside every group)
+  n_immutable: 1
+  near_distance: 1.0        # threshold of the near route (signed mean of its features)
+  far_distance: 3.0         # threshold of the far routes
+  label_noise: 0.1
+  base_fraction: 0.6        # share of the base (mostly unfavorable) cloud
+  directions: up            # up | mixed (odd routes need a DECREASE)
+  descriptor: aligned       # aligned | shuffled (grid groups unrelated to the routes)

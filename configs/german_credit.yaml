@@ -1,10 +1,31 @@
-# South German Credit (UCI 522). EXAMPLE, to be validated against Marcelo's
-# constraint table (T6): types, groups and constraints still need checking.
+# South German Credit (UCI 522) -- the corrected recoding by Groemping (2019),
+# NOT the classic Statlog "credit-g" of OpenML, which carries the documentation errors.
+# Checked against the T6 constraint table (plan 3.5) and the UCI codebook (codetable.txt).
+#
 # Types: numeric | ordinal | nominal
 # Constraints: free | immutable | increase_only | irreversible | excluded
+#
+# Encoding (datasets.py): every categorical code is shifted to start at 0
+# (the UCI file is 1-based except credit_history and purpose).
+# Ordinal directions follow the codebook, so "up" means:
+#   status, savings ......... more money in the account (code 0 = no account / unknown: NOT truly ordered)
+#   installment_rate ........ LOWER installment as % of income (code 0 = >=35%, 3 = <20%)
+#   employment_duration ..... longer employment;  present_residence: longer residence
+#   property ................ more valuable collateral;  job: more qualified
+#   people_liable ........... code 0 = 3 or more, 1 = 0 to 2
 name: german_credit
 target: credit_risk
+favorable_class: 1            # raw label: 1 = good, 0 = bad
+source:
+  kind: uci
+  id: 522
+  url: https://archive.ics.uci.edu/static/public/522/south+german+credit.zip
+  member: SouthGermanCredit.asc
 groups: [contract, accounts, employment_capacity, collateral]
+# Mutable features that are deliberately outside every group: they change the
+# effort but not the strategy. Declaring them here is the "declared out" of
+# the T6 acceptance criterion.
+ungrouped: [present_residence, telephone]
 features:
   - {name: status,                  type: ordinal, constraint: free,          group: accounts}
   - {name: duration,                type: numeric, constraint: free,          group: contract}

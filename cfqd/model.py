@@ -30,12 +30,17 @@ class CountingModel:
     def remaining(self) -> int | None:
         return None if self.budget is None else self.budget - self.n_queries
 
+    def charge(self, n: int) -> None:
+        """Count n queries made outside predict_proba (e.g. Wachter's gradient
+        forward passes, which go straight to the torch module)."""
+        if self.budget is not None and self.n_queries + n > self.budget:
+            raise BudgetExceeded(f"query budget of {self.budget} exhausted")
+        self.n_queries += n
+        self.history.append(self.n_queries)
+
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         X = np.atleast_2d(np.asarray(X, dtype=float))
-        if self.budget is not None and self.n_queries + len(X) > self.budget:
-            raise BudgetExceeded(f"query budget of {self.budget} exhausted")
-        self.n_queries += len(X)
-        self.history.append(self.n_queries)
+        self.charge(len(X))
         return self.model.predict_proba(X)
 
     def predict(self, X: np.ndarray) -> np.ndarray:
@@ -43,4 +48,7 @@ class CountingModel:
 
     # Uncounted query: for evaluation (metrics) only, never inside a method.
     def predict_uncounted(self, X: np.ndarray) -> np.ndarray:
-        return self.model.predict_proba(np.atleast_2d(X)).argmax(axis=1)
+        return self.predict_proba_uncounted(X).argmax(axis=1)
+
+    def predict_proba_uncounted(self, X: np.ndarray) -> np.ndarray:
+        return self.model.predict_proba(np.atleast_2d(np.asarray(X, dtype=float)))
