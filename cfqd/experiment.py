@@ -11,11 +11,13 @@ at a larger budget, so this gives the exact state of the archive at every
 checkpoint; for one-shot methods (DiCE, Wachter, FACE) it is the only honest
 way to measure them at a given budget.
 
-Outputs (resumable: a configuration whose files exist is skipped)::
+Outputs, under the experiment's ``out`` folder (e.g. results/full_rerun); resumable:
+a configuration whose runs/ and summary/ files exist is skipped::
 
-    results/runs/<dataset>__<model>__<method>__seed<k>.csv     one row per counterfactual
-    results/summary/<dataset>__<model>__<method>__seed<k>.csv  one row per (instance, budget)
-    results/manifest.jsonl                                     one line per configuration
+    <out>/runs/<dataset>__<model>__<method>__seed<k>.csv       one row per counterfactual
+    <out>/summary/<dataset>__<model>__<method>__seed<k>.csv    one row per (instance, budget)
+    <out>/manifest/<dataset>__<model>__<method>__seed<k>.json  one file per configuration
+    <out>/manifest.jsonl                                       all of manifest/, rebuilt at the end of a run
 """
 from __future__ import annotations
 
