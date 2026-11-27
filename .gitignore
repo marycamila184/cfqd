@@ -13,13 +13,11 @@ data/processed/
 # Results. Everything here can be regenerated, but the full run costs ~6 h of CPU.
 # Versioned: what the statistics and the results page need, i.e. the per-instance
 # summaries and the manifest of the full run and of the CARLA check (~12 MB).
+# The full run is results/full_rerun (2026-11-22, on the committed code). The first run,
+# results/full, was removed after the C4 check; it is in the git history (commit 6a04788).
 # Not versioned: runs/ (one row per counterfactual, ~200 MB), logs, notes and the
 # smaller demo runs (curve_demo, simulation_quick, smoke), which the notebooks rebuild.
 results/*
-!results/full/
-results/full/*
-!results/full/summary/
-!results/full/manifest.jsonl
 !results/carla_check/
 results/carla_check/*
 !results/carla_check/summary/

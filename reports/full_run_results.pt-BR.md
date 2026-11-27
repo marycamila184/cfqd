@@ -7,6 +7,10 @@ As seções 2.1–2.6 usam `results/full/summary/*.csv` (700 configurações, 70
 **Atualização de 2026-11-22:** as 700 configurações foram re-rodadas com o código commitado (`results/full_rerun`),
 já com a correção do DiCE-random (C9), e a simulação completa foi rodada (`results/simulation`). A re-rodada reproduz
 os resultados originais (C4). A seção 2.7, a seção 2.8 e as linhas do DiCE-random na §2.3 vêm dessas rodadas novas.
+**Nota (2026-11-27):** depois disso, `results/full` foi removido do `main`, já que a re-rodada o reproduz (C4), e
+`results/full_rerun` passou a ser a rodada versionada. Para recalcular exatamente as seções 2.1–2.6, recupere-o do
+histórico do git: `git checkout 6a04788 -- results/full`. `repair_manifest.py` e `rerun_pipeline.py`, citados abaixo,
+também estão nesse commit.
 Salvo indicação em contrário, os números são do **maior orçamento (10.000 consultas)**. Cada
 (dataset, modelo, método, seed) é primeiro agregado pela média das suas 20 instâncias; depois, pela média entre
 seeds, modelos e datasets.

@@ -15,4 +15,4 @@ budgets: [500, 1000, 2000, 5000, 10000]
 n_instances: 20
 effort_edges: [0.1, 0.25, 0.5, 1.0]
 train_predictions: free
-out: results/full
+out: results/full_rerun

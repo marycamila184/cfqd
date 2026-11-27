@@ -1,6 +1,6 @@
 """Compare the per-instance summaries of two runs of the same grid (reproducibility, concern C4).
 
-    python scripts/compare_runs.py [--old results/full] [--new results/full_rerun] [--out FILE.csv]
+    python scripts/compare_runs.py --old RUN_DIR --new RUN_DIR [--out FILE.csv]
 
 For every configuration present in both runs, the summaries are merged on (instance_id, budget)
 and every result column is compared except the timing (``seconds``). Rows of ``dice_random``
@@ -89,8 +89,8 @@ def report(df: pd.DataFrame) -> str:
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--old", default="results/full")
-    ap.add_argument("--new", default="results/full_rerun")
+    ap.add_argument("--old", required=True, help="e.g. results/full_rerun")
+    ap.add_argument("--new", required=True)
     ap.add_argument("--out", help="CSV with one line per configuration")
     a = ap.parse_args(argv)
     df = compare(REPO / a.old, REPO / a.new)

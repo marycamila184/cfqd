@@ -7,6 +7,9 @@ and `results/full/manifest.jsonl`, plus the outputs saved in notebook 03.
 **Update of 2026-11-22:** all 700 configurations were re-run on the committed code (`results/full_rerun`), with the
 DiCE-random fix (C9), and the full simulation was run (`results/simulation`). The re-run reproduces the original
 results (C4). Section 2.7, section 2.8 and the DiCE-random rows of §2.3 come from these new runs.
+**Note (2026-11-27):** `results/full` was then removed from `main`, since the re-run reproduces it (C4), and
+`results/full_rerun` is now the versioned run. To recompute sections 2.1–2.6 exactly, restore it from the git history:
+`git checkout 6a04788 -- results/full`. `repair_manifest.py` and `rerun_pipeline.py`, cited below, are in that commit too.
 Unless a section says otherwise, numbers are at the **largest budget (10,000 queries)**. Each
 (dataset, model, method, seed) is first averaged over its 20 instances, then averaged across seeds, models and datasets.
 

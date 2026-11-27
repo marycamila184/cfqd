@@ -1,6 +1,6 @@
 """Aggregate the batch summaries into the data files of the group results page.
 
-    python scripts/build_report_data.py [--exp results/full] [--out results/report]
+    python scripts/build_report_data.py [--exp results/full_rerun] [--out results/report]
 
 The page itself is report/index.html (versioned); this script only writes its data.
 Writes JSON files {rows, meta} (meta carries this script's own code, so every number
@@ -75,7 +75,7 @@ def seed_level(s: pd.DataFrame) -> pd.DataFrame:
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--exp", default="results/full")
+    ap.add_argument("--exp", default="results/full_rerun")
     ap.add_argument("--config", default="configs/experiments/full.yaml")
     ap.add_argument("--out", default="results/report")
     a = ap.parse_args(argv)
