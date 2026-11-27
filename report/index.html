@@ -155,7 +155,7 @@
       <li><b>Training-data predictions.</b> DiCE's KD-tree and FACE's graph label the training data without charging the budget. Counting them would cost DiCE 31k queries per instance on Adult.</li>
       <li><b>COMPAS actionability.</b> Strict actionability leaves no actionable feature (nothing can run); Guidotti's leaves one group. The runs use Guidotti's.</li>
       <li><b>COMPAS accuracy rule.</b> The plan reads accuracy above 0.65 as label leakage. Ours is 0.67 with no leaking column, matching Dressel and Farid (2018).</li>
-      <li><b>Wachter on Adult with the neural network</b> reaches 1.00 against 0.50 in CARLA, with CARLA's stop rule and lambda schedule. The difference is the model and CARLA's timeout.</li>
+      <li><b>Wachter with the neural network</b> beats CARLA's success rate on Adult (1.00 against 0.50) and COMPAS (0.94 against 0.66), confirmed with 200 instances per cell in the full-run report (§2.8), with CARLA's stop rule and lambda schedule. The difference is the model, the constraints and CARLA's timeout.</li>
       <li><b>MOC</b> still has no owner, and NS, NSLC and surprise are not in these runs yet.</li>
     </ul>
   </section>
@@ -167,7 +167,7 @@
       <p><b>Min distance</b>: Guidotti distance (MAD-weighted L1 on numeric features plus mismatch share on categorical ones) of the closest valid counterfactual. <b>Features changed</b>: mean L0.</p>
       <p><b>Diversity</b>: mean pairwise distance among valid counterfactuals. <b>Redundancy</b>: changed features that can be reverted without losing validity (CARLA).</p>
       <p><b>Budget</b>: model queries counted by a wrapper around every model call, gradient steps included. Each budget is an independent run with the same search seed.</p>
-      <p><b>Fixes applied before these runs</b>: DiCE's KD-tree initialisation no longer stalls in uncapped random sampling (COMPAS went from 0.0 to 0.9–1.0 success); FACE checks up to 500 projected candidates.</p>
+      <p><b>Fixes applied before these runs</b>: DiCE's KD-tree initialisation no longer stalls in uncapped random sampling (COMPAS went from 0.0 to 0.9–1.0 success); FACE checks up to 500 projected candidates; DiCE-random no longer returns nothing at budgets up to 2,000 (its sample size now fits the budget, with an anytime fallback; concern C9).</p>
     </div>
   </details>
 </div>
