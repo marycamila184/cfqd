@@ -3,8 +3,8 @@
 **A benchmark of Quality-Diversity algorithms for counterfactual explanations.**
 
 Course project for INFO7070 (Explainable Machine Learning, PPGInf/UFPR, Prof. Anderson Ara).
-Working title: *CFQD: Benchmarking Quality-Diversity Algorithms for Counterfactual Explanations*
-(formerly *Beyond Optimization: Benchmarking Quality-Diversity Algorithms for Counterfactual Explanations*).
+Working title: *Beyond Optimization: Benchmarking Quality-Diversity Algorithms for Counterfactual Explanations*
+(previously *CFQD: Benchmarking Quality-Diversity Algorithms for Counterfactual Explanations*).
 
 ## The idea
 
